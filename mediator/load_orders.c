@@ -365,6 +365,7 @@ void load_orders(char fname[], char fname1[], char fname2[], char fname3[], au a
             if (a[row_number].current_stamina <= 0)
             {
                 a[row_number].current_stamina = -1;
+                (*u)--;
             }
         }    
     }

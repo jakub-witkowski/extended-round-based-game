@@ -126,7 +126,7 @@ void move(char fname[], au a[], int* u, int m[][MAP_SIZE_X])
         if (dice_cast == 1)
         {
             /* validating the draws against the map */
-            if (((a[i].x_coord + x_axis_move) >= MAP_SIZE_X) && ((a[i].y_coord - y_axis_move) >= MAP_SIZE_Y))
+            if (((a[i].x_coord - x_axis_move) < 0) || ((a[i].y_coord - y_axis_move) < 0))
                 dice_cast = -1; // cannot go outside the map
             if (distance > a[i].remaining_movement)
                 dice_cast = -1; // cannot exceed remaining movement
