@@ -101,6 +101,8 @@ int main(int argc, char* argv[])
 	}
 	else if (strcmp(active_units[0].is_base_busy, "0") != 0)
 		printf("Training in progress, cannot train new units.\n");
+	else if (gold < 100)
+		printf("Insufficient gold for traning.\n");
 
 	move(argv[3], active_units, &units_on_the_map_counter, map_data);
 

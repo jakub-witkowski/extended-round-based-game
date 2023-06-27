@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAP_SIZE_X 32
 #define MAP_SIZE_Y 32
@@ -19,50 +20,71 @@ typedef struct {
 
 void load_status(char fname[], int* u, long* g, au a[])
 {
+    /* variables used to store data read from status.txt */
+    const int length = 24;
+    char input[length];
+    int letters = 0;
+    int digits = 0;
+    int spaces = 0;
+    long gold = 0;
 
     FILE * fptr;
 
     fptr = fopen(fname, "r");
-    
-    /* getting number of lines in status.txt*/
-    int line_count = 0;
-    char c;
-        
-    for (c = getc(fptr); c != EOF; c = getc(fptr))
-        if (c == '\n')
-            line_count++;
 
-    /* getting the number of units present on the map */
-    *u = line_count - 1;
-
-    /* going back to the beginning of the file */
-    rewind(fptr); 
-
-    /* updating gold */
-    int temp;
-    if (fscanf(fptr, "%d", &temp) != 1)
+    /* store individual lines of status.txt as strings and scan them based on their format */
+    while (fgets(input, length, fptr) != NULL)
     {
-        fprintf(stderr, "unable to parse status.txt\n");
-    }
-
-    *g = temp;
-
-    /* updating base info */
-    for (int i = 2; i <= 3; i++)
-    {
-        if (fscanf(fptr, "%s %s %d %d %d %d %s", a[i-2].affiliation, a[i-2].unit_type, &a[i-2].unit_id, &a[i-2].x_coord, &a[i-2].y_coord, &a[i-2].current_stamina, a[i-2].is_base_busy) != 7)
+        for (int i = 0; input[i] != '\n'; i++)
         {
-            fprintf(stderr, "unable to parse status.txt\n");
+            if (isupper(input[i]))
+            {
+                letters++;
+            }
+            if (isblank(input[i]))
+            {
+                spaces++;
+            }       
+            if (isdigit(input[i]))
+            {
+                digits++;
+            }
         }
+
+        if (letters == 0 && digits >= 1 && spaces == 0)
+        {
+            sscanf(input, "%ld", &gold);
+            *g = gold;
+
+            letters = 0;
+            digits = 0;
+            spaces = 0;
+        }
+
+        if (letters >= 2 && spaces == 6)
+        {
+            sscanf(input, "%s %s %d %d %d %d %s", a[*u].affiliation, a[*u].unit_type, &a[*u].unit_id, &a[*u].x_coord, &a[*u].y_coord, &a[*u].current_stamina, a[*u].is_base_busy);
+            (*u)++;
+        
+            letters = 0;
+            spaces = 0;
+        }
+
+        if (letters == 2 && spaces == 5)
+        {
+            sscanf(input, "%s %s %d %d %d %d", a[*u].affiliation, a[*u].unit_type, &a[*u].unit_id, &a[*u].x_coord, &a[*u].y_coord, &a[*u].current_stamina);
+            (*u)++;
+
+            letters = 0;
+            spaces = 0;
+        }
+
+        letters = 0;
+        digits = 0;
+        spaces = 0;
     }
 
-    /* updating unit info */
-    int i = 4;
-    while (i <= line_count)
-    {
-        fscanf(fptr, "%s %s %d %d %d %d", a[i-2].affiliation, a[i-2].unit_type, &a[i-2].unit_id, &a[i-2].x_coord, &a[i-2].y_coord, &a[i-2].current_stamina);
-        i++;
-    }
+    fclose(fptr);
 
     /* movement points counter set */
     for (int i = 0; i < *u; i++)
@@ -84,5 +106,4 @@ void load_status(char fname[], int* u, long* g, au a[])
             a[i].attack_count = 1;
     }
 
-fclose(fptr);
 }

@@ -128,6 +128,10 @@ void load_orders(char fname[], char fname1[], char fname2[], char fname3[], au a
             }
 
             training_unit_id = *u;
+            /* prevent unit id duplication */
+            if (a[training_unit_id-1].unit_id == a[training_unit_id].unit_id)
+                training_unit_id++;
+
             (*u)++;
             
             if (strcmp(a[row_number].is_base_busy, "K") == 0)
