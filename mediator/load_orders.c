@@ -128,11 +128,27 @@ void load_orders(char fname[], char fname1[], char fname2[], char fname3[], au a
             }
 
             training_unit_id = *u;
-            /* prevent unit id duplication */
-            if (a[training_unit_id-1].unit_id == a[training_unit_id].unit_id)
-                training_unit_id++;
+            
+            /* are there duplicates among unit ids? */
+            int id_is_duplicate = 0;
+            for (int i = 0; i < *u; i++)
+            {
+                if (a[i].unit_id == training_unit_id)
+                    id_is_duplicate++;
+            }
 
-            (*u)++;
+            /* if duplicates are present, look for the highest current id */
+            if (id_is_duplicate > 0)
+            {
+                int current_highest_id = 0;
+                for (int i = 1; i < *u; i++)
+                {
+                    if (a[i].unit_id > a[i-1].unit_id)
+                        current_highest_id = a[i].unit_id;
+                }
+
+                training_unit_id = current_highest_id + 1;
+            }
             
             if (strcmp(a[row_number].is_base_busy, "K") == 0)
             {
@@ -163,14 +179,15 @@ void load_orders(char fname[], char fname1[], char fname2[], char fname3[], au a
                 training_unit_stamina = 20;
             }
 
-            strcpy(a[training_unit_id].affiliation, training_unit_affiliation);
-            strcpy(a[training_unit_id].unit_type, training_unit_type);
-            a[training_unit_id].unit_id = training_unit_id;
-            a[training_unit_id].x_coord = training_unit_x;
-            a[training_unit_id].y_coord = training_unit_y;
-            a[training_unit_id].current_stamina = training_unit_stamina;
+            strcpy(a[*u].affiliation, training_unit_affiliation);
+            strcpy(a[*u].unit_type, training_unit_type);
+            a[*u].unit_id = training_unit_id;
+            a[*u].x_coord = training_unit_x;
+            a[*u].y_coord = training_unit_y;
+            a[*u].current_stamina = training_unit_stamina;
 
             strcpy(a[row_number].is_base_busy, "0");//printf("Training done: %s %s %d %d %d %d\n", a[training_unit_id].affiliation, a[training_unit_id].unit_type, a[training_unit_id].unit_id, a[training_unit_id].x_coord, a[training_unit_id].y_coord, a[training_unit_id].current_stamina);
+            (*u)++;
         }
         
     fptr1 = fopen(fname1, "r");
@@ -369,7 +386,7 @@ void load_orders(char fname[], char fname1[], char fname2[], char fname3[], au a
             if (a[row_number].current_stamina <= 0)
             {
                 a[row_number].current_stamina = -1;
-                (*u)--;
+                printf("Unit %d is defeated.\n", a[row_number].unit_id);
             }
         }    
     }
